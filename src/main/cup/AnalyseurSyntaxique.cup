@@ -1,0 +1,156 @@
+/* package et imports */
+package fr.usmb.m1isc.compilation.tp;
+import java_cup.runtime.Symbol;
+import java.util.HashMap;
+
+/* inclusion du code */
+
+action code {: 
+    // pour utilisation dans les actions (classe action)
+    private HashMap<String,Integer> vars = new HashMap<>();
+    private boolean erreur = false;
+
+    public abstract class Node {
+        public abstract String toString();
+    }
+
+    public class BinaryNode extends Node {
+        String op;
+        Node left, right;
+
+        BinaryNode(String op, Node left, Node right) {
+            this.op = op;
+            this.left = left;
+            this.right = right;
+        }
+
+        public String toString() {
+            return "(" + op + " " + left + " " + right + ")";
+        }
+    }
+
+    public class UnaryNode extends Node {
+        String op;
+        Node expr;
+
+        UnaryNode(String op, Node expr) {
+            this.op = op;
+            this.expr = expr;
+        }
+
+        public String toString() {
+            return "(" + op + " " + expr + ")";
+        }
+    }
+
+    public class ValueNode extends Node {
+        Object value;
+
+        ValueNode(Object value) {
+            this.value = value;
+        }
+
+        public String toString() {
+            return value.toString();
+        }
+    }
+:};
+
+
+parser code {:
+    // pour le parser (redefinition de la methode reportant les erreurs d'analyse)
+    public void report_error(String message, Object info) {
+        String m = "";
+        if (info instanceof java_cup.runtime.Symbol) {
+            Symbol s = ((Symbol) info);
+            if (s != null && s.left >= 0 ) {
+                /* Ajoute le numero de ligne  et de colonne*/
+                m =  "Ligne " + (s.left+1) + ", Colonne " + (s.right+1) + " : ";
+            }
+        }
+        m = m + message;
+        System.err.println(m);
+    }
+:};
+
+ init with {:
+    //    initialisation du parser
+:};
+
+/* symboles terminaux */
+terminal PLUS, MOINS, MOINS_UNAIRE, MUL, DIV, MOD, NOT, OR, AND, PAR_G, PAR_D, SEMI, POINT, LET, INPUT, OUTPUT, IF, THEN, ELSE, WHILE, DO, EGAL, GT, GTE, NIL, ERROR;
+terminal Integer ENTIER;
+terminal String IDENT;
+/* non terminaux */
+non terminal Node program, sequence, expression, expr;
+
+
+precedence nonassoc OUTPUT;
+precedence right OR;
+precedence right AND;
+precedence right NOT;
+precedence nonassoc EGAL;
+precedence nonassoc GT, GTE;
+precedence left PLUS, MOINS;
+precedence left MUL, DIV, MOD;
+precedence left MOINS_UNAIRE;
+
+
+/* grammaire */
+// un pg est une sequence d'insctions terminee par point
+program ::= sequence:s POINT
+    {:
+        RESULT = s;  // Associe la séquence de commandes à RESULT
+        System.out.println("RESULT" + RESULT.toString());  // Affiche l'arbre à la fin
+    :};
+
+sequence ::= expression:e1 SEMI sequence:e2 {:
+            RESULT = new BinaryNode(";", e1, e2); // Crée un arbre binaire pour la séquence
+            System.out.println("Sequence: " + RESULT.toString());
+
+            :}
+            | expression:e {:
+            RESULT = e; // Si c'est juste une seule expression
+            System.out.println("une seule expression: " + RESULT.toString());
+
+            :}
+            | {:
+            RESULT = new ValueNode("NIL"); // Si c'est une séquence vide
+            System.out.println("séquence vide: " + RESULT.toString());
+            :}
+            ;
+
+// une expession est soit une affectation ,une
+expression ::= expr:e
+             {: RESULT = new ValueNode(e);:}
+             | LET IDENT:nom EGAL expr:e
+             {: RESULT = new BinaryNode("LET", new ValueNode(nom), new ValueNode(e));:}
+             | WHILE expr:cond DO expression:e
+             {: RESULT = new BinaryNode("WHILE", new ValueNode(cond), new ValueNode(e)); :}
+             | IF expr:cond THEN expression:a1 ELSE expression:a2
+             {: RESULT = new BinaryNode("IF", new ValueNode(cond), new BinaryNode("THEN", new ValueNode(a1), new ValueNode(a2))); :}
+             | error
+             {: System.err.println("Erreur de syntaxe détectée"); RESULT = new ValueNode("ERROR"); :}
+             ;
+
+
+// expression arithmetiques et logiques
+expr ::= NOT:op expr:e {: RESULT = new UnaryNode("!", new ValueNode(e)); :}
+       | expr:e1 AND expr:e2 {: RESULT = new BinaryNode("AND", new ValueNode(e1), new ValueNode(e2));:}
+       | expr:e1 OR expr:e2 {: RESULT = new BinaryNode("OR", new ValueNode(e1), new ValueNode(e2)); :}
+       | expr:e1 EGAL expr:e2 {: RESULT = new BinaryNode("==", new ValueNode(e1), new ValueNode(e2)); :}
+       | expr:e1 GT expr:e2 {: RESULT = new BinaryNode(">", new ValueNode(e1), new ValueNode(e2)); :}
+       | expr:e1 GTE expr:e2 {: RESULT = new BinaryNode(">=", new ValueNode(e1), new ValueNode(e2)); :}
+       | expr:e1 PLUS expr:e2 {: RESULT = new BinaryNode("+", new ValueNode(e1), new ValueNode(e2));:}
+       | expr:e1 MOINS expr:e2 {: RESULT = new BinaryNode("-", new ValueNode(e1), new ValueNode(e2)); :}
+       | expr:e1 MUL expr:e2 {: RESULT = new BinaryNode("*", new ValueNode(e1), new ValueNode(e2));:}
+       | expr:e1 DIV expr:e2 {: RESULT = new BinaryNode("/", new ValueNode(e1), new ValueNode(e2));:}
+       | expr:e1 MOD expr:e2 {: RESULT = new BinaryNode("%", new ValueNode(e1), new ValueNode(e2)); :}
+       | MOINS expr:e {: RESULT = new UnaryNode("-", new ValueNode(e)); :} %prec MOINS_UNAIRE
+       | OUTPUT expr:e {: RESULT = new UnaryNode("OUTPUT", new ValueNode(e)); :}
+       | INPUT {: RESULT = new ValueNode("INPUT"); :}
+       | NIL {: RESULT = new ValueNode("NIL"); :}
+       | ENTIER:n {: RESULT = new ValueNode(n); :}
+       | IDENT:id {: RESULT = new ValueNode(id); :}
+       | PAR_G sequence:e PAR_D {: RESULT = new ValueNode(e); :}
+       ;
