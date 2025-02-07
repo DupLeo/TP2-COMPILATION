@@ -12,6 +12,7 @@ action code {:
 
     public abstract class Node {
         public abstract String toString();
+        public abstract String generateAssembly();
     }
 
     public class BinaryNode extends Node {
@@ -27,6 +28,31 @@ action code {:
         public String toString() {
             return "(" + op + " " + left + " " + right + ")";
         }
+
+        public String generateAssembly() {
+        StringBuilder sb = new StringBuilder();
+        if (op.equals("LET")) {
+            sb.append(right.generateAssembly());
+            sb.append("mov ").append(left.toString()).append(", eax\n");
+        } else if (op.equals(";")) {
+            sb.append(left.generateAssembly());
+            sb.append(right.generateAssembly());
+        } else if (op.equals("*")) {
+            sb.append(left.generateAssembly());
+            sb.append("push eax\n");
+            sb.append(right.generateAssembly());
+            sb.append("pop ebx\n");
+            sb.append("mul eax, ebx\n");
+        } else if (op.equals("/")) {
+            sb.append(left.generateAssembly());  
+            sb.append("push eax\n");             
+            sb.append(right.generateAssembly()); 
+            sb.append("mov ebx, eax\n");         
+            sb.append("pop eax\n");              
+            sb.append("div ebx\n");
+        }
+        return sb.toString();
+    }
     }
 
     public class UnaryNode extends Node {
@@ -41,6 +67,15 @@ action code {:
         public String toString() {
             return "(" + op + " " + expr + ")";
         }
+
+        public String generateAssembly() {
+            StringBuilder sb = new StringBuilder();
+            sb.append(expr.generateAssembly());
+            if (op.equals("-")) {
+                sb.append("neg eax\n");
+            }
+            return sb.toString();
+        }
     }
 
     public class ValueNode extends Node {
@@ -52,6 +87,10 @@ action code {:
 
         public String toString() {
             return value.toString();
+        }
+
+        public String generateAssembly() {
+            return "mov eax, " + value + "\n";
         }
     }
 :};
@@ -101,26 +140,31 @@ precedence left MOINS_UNAIRE;
 program ::= sequence:s POINT
     {:
         RESULT = s;  // Associe la séquence de commandes à RESULT
-        System.out.println(RESULT.toString());  // Affiche l'arbre à la fin
+        System.out.println(RESULT.generateAssembly());  // Affiche l'arbre à la fin
     :};
 
 sequence ::= expression:e1 SEMI sequence:e2 {:
             RESULT = new BinaryNode(";", e1, e2); // Crée un arbre binaire pour la séquence
+                    System.out.println(RESULT.generateAssembly());  // Affiche l'arbre à la fin
 
             :}
             | expression:e {:
             RESULT = e; // Si c'est juste une seule expression
+                    System.out.println(RESULT.generateAssembly());  // Affiche l'arbre à la fin
             :}
             | {:
             RESULT = new ValueNode("NIL"); // Si c'est une séquence vide
+                    System.out.println(RESULT.generateAssembly());  // Affiche l'arbre à la fin
             :}
             ;
 
 // une expession est soit une affectation ,une
 expression ::= expr:e
-             {: RESULT = new ValueNode(e);:}
+             {: RESULT = new ValueNode(e);
+             System.out.println(RESULT.generateAssembly());:}
              | LET IDENT:nom EGAL expr:e
-             {: RESULT = new BinaryNode("LET", new ValueNode(nom), new ValueNode(e));:}
+             {: RESULT = new BinaryNode("LET", new ValueNode(nom), new ValueNode(e));
+             System.out.println(RESULT.generateAssembly());:}
              | WHILE expr:cond DO expression:e
              {: RESULT = new BinaryNode("WHILE", new ValueNode(cond), new ValueNode(e)); :}
              | IF expr:cond THEN expression:a1 ELSE expression:a2
@@ -131,22 +175,22 @@ expression ::= expr:e
 
 
 // expression arithmetiques et logiques
-expr ::= NOT:op expr:e {: RESULT = new UnaryNode("!", new ValueNode(e)); :}
-       | expr:e1 AND expr:e2 {: RESULT = new BinaryNode("AND", new ValueNode(e1), new ValueNode(e2));:}
-       | expr:e1 OR expr:e2 {: RESULT = new BinaryNode("OR", new ValueNode(e1), new ValueNode(e2)); :}
-       | expr:e1 EGAL expr:e2 {: RESULT = new BinaryNode("==", new ValueNode(e1), new ValueNode(e2)); :}
-       | expr:e1 GT expr:e2 {: RESULT = new BinaryNode(">", new ValueNode(e1), new ValueNode(e2)); :}
-       | expr:e1 GTE expr:e2 {: RESULT = new BinaryNode(">=", new ValueNode(e1), new ValueNode(e2)); :}
-       | expr:e1 PLUS expr:e2 {: RESULT = new BinaryNode("+", new ValueNode(e1), new ValueNode(e2));:}
-       | expr:e1 MOINS expr:e2 {: RESULT = new BinaryNode("-", new ValueNode(e1), new ValueNode(e2)); :}
-       | expr:e1 MUL expr:e2 {: RESULT = new BinaryNode("*", new ValueNode(e1), new ValueNode(e2));:}
-       | expr:e1 DIV expr:e2 {: RESULT = new BinaryNode("/", new ValueNode(e1), new ValueNode(e2));:}
-       | expr:e1 MOD expr:e2 {: RESULT = new BinaryNode("%", new ValueNode(e1), new ValueNode(e2)); :}
-       | MOINS expr:e {: RESULT = new UnaryNode("-", new ValueNode(e)); :} %prec MOINS_UNAIRE
-       | OUTPUT expr:e {: RESULT = new UnaryNode("OUTPUT", new ValueNode(e)); :}
-       | INPUT {: RESULT = new ValueNode("INPUT"); :}
-       | NIL {: RESULT = new ValueNode("NIL"); :}
-       | ENTIER:n {: RESULT = new ValueNode(n); :}
-       | IDENT:id {: RESULT = new ValueNode(id); :}
-       | PAR_G sequence:e PAR_D {: RESULT = new ValueNode(e); :}
+expr ::= NOT:op expr:e {: RESULT = new UnaryNode("!", new ValueNode(e)); System.out.println(RESULT.generateAssembly());:}
+       | expr:e1 AND expr:e2 {: RESULT = new BinaryNode("AND", new ValueNode(e1), new ValueNode(e2));System.out.println(RESULT.generateAssembly());:}
+       | expr:e1 OR expr:e2 {: RESULT = new BinaryNode("OR", new ValueNode(e1), new ValueNode(e2)); System.out.println(RESULT.generateAssembly());:}
+       | expr:e1 EGAL expr:e2 {: RESULT = new BinaryNode("==", new ValueNode(e1), new ValueNode(e2)); System.out.println(RESULT.generateAssembly());:}
+       | expr:e1 GT expr:e2 {: RESULT = new BinaryNode(">", new ValueNode(e1), new ValueNode(e2)); System.out.println(RESULT.generateAssembly());:}
+       | expr:e1 GTE expr:e2 {: RESULT = new BinaryNode(">=", new ValueNode(e1), new ValueNode(e2)); System.out.println(RESULT.generateAssembly());:}
+       | expr:e1 PLUS expr:e2 {: RESULT = new BinaryNode("+", new ValueNode(e1), new ValueNode(e2));System.out.println(RESULT.generateAssembly());:}
+       | expr:e1 MOINS expr:e2 {: RESULT = new BinaryNode("-", new ValueNode(e1), new ValueNode(e2)); System.out.println(RESULT.generateAssembly());:}
+       | expr:e1 MUL expr:e2 {: RESULT = new BinaryNode("*", new ValueNode(e1), new ValueNode(e2));System.out.println(RESULT.generateAssembly());:}
+       | expr:e1 DIV expr:e2 {: RESULT = new BinaryNode("/", new ValueNode(e1), new ValueNode(e2));System.out.println(RESULT.generateAssembly());:}
+       | expr:e1 MOD expr:e2 {: RESULT = new BinaryNode("%", new ValueNode(e1), new ValueNode(e2)); System.out.println(RESULT.generateAssembly());:}
+       | MOINS expr:e {: RESULT = new UnaryNode("-", new ValueNode(e)); System.out.println(RESULT.generateAssembly());:} %prec MOINS_UNAIRE
+       | OUTPUT expr:e {: RESULT = new UnaryNode("OUTPUT", new ValueNode(e)); System.out.println(RESULT.generateAssembly());:}
+       | INPUT {: RESULT = new ValueNode("INPUT"); System.out.println(RESULT.generateAssembly());:}
+       | NIL {: RESULT = new ValueNode("NIL"); System.out.println(RESULT.generateAssembly());:}
+       | ENTIER:n {: RESULT = new ValueNode(n); System.out.println(RESULT.generateAssembly());:}
+       | IDENT:id {: RESULT = new ValueNode(id); System.out.println(RESULT.generateAssembly());:}
+       | PAR_G sequence:e PAR_D {: RESULT = new ValueNode(e); System.out.println(RESULT.generateAssembly());:}
        ;
