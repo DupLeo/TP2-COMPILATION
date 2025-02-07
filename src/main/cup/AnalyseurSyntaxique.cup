@@ -101,22 +101,18 @@ precedence left MOINS_UNAIRE;
 program ::= sequence:s POINT
     {:
         RESULT = s;  // Associe la séquence de commandes à RESULT
-        System.out.println("RESULT" + RESULT.toString());  // Affiche l'arbre à la fin
+        System.out.println(RESULT.toString());  // Affiche l'arbre à la fin
     :};
 
 sequence ::= expression:e1 SEMI sequence:e2 {:
             RESULT = new BinaryNode(";", e1, e2); // Crée un arbre binaire pour la séquence
-            System.out.println("Sequence: " + RESULT.toString());
 
             :}
             | expression:e {:
             RESULT = e; // Si c'est juste une seule expression
-            System.out.println("une seule expression: " + RESULT.toString());
-
             :}
             | {:
             RESULT = new ValueNode("NIL"); // Si c'est une séquence vide
-            System.out.println("séquence vide: " + RESULT.toString());
             :}
             ;
 
