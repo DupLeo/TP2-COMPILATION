@@ -81,11 +81,6 @@ action code {:
                 sb.append(falseLabel).append(":\n");
                 sb.append("\tmov eax, 0\n");
                 sb.append(exitLabel).append(":\n");
-            } else if (op.equals("OUTPUT")) {
-                sb.append(right.generateAssembly());
-                sb.append("\tout eax\n");
-            } else if (op.equals("INPUT")) {
-                sb.append("\tin eax\n");
             }
             return sb.toString();
         }
@@ -110,6 +105,9 @@ action code {:
             if (op.equals("-")) {
                 sb.append("neg eax\n");
             }
+            else if (op.equals("OUTPUT")) {
+                sb.append("\tout eax\n");
+            }
             return sb.toString();
         }
     }
@@ -132,9 +130,11 @@ action code {:
                     return ((Node) value).generateAssembly();
                 } else if (value.equals("INPUT")) {
                     sb.append("\tin eax\n");
-                } else {
+                }
+                else {
                     sb.append("\tmov eax, " + value + "\n");
                 }
+
                 return sb.toString();
         }
 
