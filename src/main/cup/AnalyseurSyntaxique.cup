@@ -63,27 +63,27 @@ action code {:
                 String labelEnd = "sortie_while_1";
                 sb.append(labelStart).append(":\n");
                 sb.append(left.generateAssembly());
-                sb.append(" jz ").append(labelEnd).append("\n");
+                sb.append("\tjz ").append(labelEnd).append("\n");
                 sb.append(right.generateAssembly());
-                sb.append(" jmp ").append(labelStart).append("\n");
+                sb.append("\tjmp ").append(labelStart).append("\n");
                 sb.append(labelEnd).append(":\n");
             } else if (op.equals(">")) {
                 String falseLabel = "faux_gt_1";
                 String exitLabel = "sortie_gt_1";
                 sb.append(left.generateAssembly());
-                sb.append("push eax\n");
+                sb.append("\tpush eax\n");
                 sb.append(right.generateAssembly());
-                sb.append(" pop ebx\n");
-                sb.append(" sub eax, ebx\n");
-                sb.append(" jle ").append(falseLabel).append("\n");
-                sb.append(" mov eax, 1\n");
-                sb.append(" jmp ").append(exitLabel).append("\n");
+                sb.append("\tpop ebx\n");
+                sb.append("\tsub eax, ebx\n");
+                sb.append("\tjle ").append(falseLabel).append("\n");
+                sb.append("\tmov eax, 1\n");
+                sb.append("\tjmp ").append(exitLabel).append("\n");
                 sb.append(falseLabel).append(":\n");
-                sb.append(" mov eax, 0\n");
+                sb.append("\tmov eax, 0\n");
                 sb.append(exitLabel).append(":\n");
             } else if (op.equals("OUTPUT")) {
                 sb.append(right.generateAssembly());
-                sb.append(" out eax\n");
+                sb.append("\tout eax\n");
             }
             return sb.toString();
         }
