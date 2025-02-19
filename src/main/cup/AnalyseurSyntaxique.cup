@@ -38,27 +38,26 @@ action code {:
             if (op.equals("LET")) {
                 if (left instanceof ValueNode) {
                     String varName = left.toString();
-                    declaredVars.add(varName);  // Ajoute la variable à la liste
+                    declaredVars.add(varName);
                 }
-
                 sb.append(right.generateAssembly());
-                sb.append("mov ").append(left.toString()).append(", eax\n");
+                sb.append("\tmov ").append(left.toString()).append(", eax\n");
             } else if (op.equals(";")) {
                 sb.append(left.generateAssembly());
                 sb.append(right.generateAssembly());
             } else if (op.equals("*")) {
                 sb.append(left.generateAssembly());
-                sb.append("push eax\n");
+                sb.append("\tpush eax\n");
                 sb.append(right.generateAssembly());
-                sb.append("pop ebx\n");
-                sb.append("mul eax, ebx\n");
+                sb.append("\tpop ebx\n");
+                sb.append("\tmul eax, ebx\n");
             } else if (op.equals("/")) {
                 sb.append(left.generateAssembly());
-                sb.append("push eax\n");
+                sb.append("\tpush eax\n");
                 sb.append(right.generateAssembly());
-                sb.append("pop ebx\n");
-                sb.append("div ebx, eax\n");
-                sb.append("mov eax, ebx\n");
+                sb.append("\tpop ebx\n");
+                sb.append("\tdiv ebx, eax\n");
+                sb.append("\tmov eax, ebx\n");
             }
             return sb.toString();
         }
@@ -99,12 +98,10 @@ action code {:
         }
 
         public String generateAssembly() {
-            if (value instanceof Node) {  // Si c'est un sous-arbre, on génère son code
+            if (value instanceof Node) { 
                 return ((Node) value).generateAssembly();
-            } else if (value instanceof String) {  // Si c'est un identifiant de variable
-                return value + "\n";
-            } else {  // Si c'est une valeur numérique
-                return "mov eax, " + value + "\n";
+            } else {
+                return "\tmov eax, " + value + "\n";
             }
         }
     }
@@ -162,14 +159,14 @@ program ::= sequence:s POINT
 
         System.out.println("CODE SEGMENT");
         System.out.println(RESULT.generateAssembly());
-        System.out.println("CODE ENDS");
+        System.out.print("CODE ENDS");
     :};
 
 sequence ::= expression:e1 SEMI sequence:e2 {:
             RESULT = new BinaryNode(";", e1, e2); // Crée un arbre binaire pour la séquence
             :}
             | expression:e {:
-            RESULT = e; // Si c'est juste une seule expression
+            RESULT = e;
             :}
             | {:
             RESULT = new ValueNode("NIL"); // Si c'est une séquence vide
