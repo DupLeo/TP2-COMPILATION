@@ -81,6 +81,15 @@ action code {:
                 sb.append(falseLabel).append(":\n");
                 sb.append("\tmov eax, 0\n");
                 sb.append(exitLabel).append(":\n");
+            } else if (op.equals("%")) {
+                sb.append(right.generateAssembly()); 
+                sb.append("\tpush eax\n");  
+                sb.append(left.generateAssembly()); 
+                sb.append("\tpop ebx\n");
+                sb.append("\tmov ecx,eax\n");
+                sb.append("\tdiv ecx,ebx\n");
+                sb.append("\tmul ecx,ebx\n"); 
+                sb.append("\tsub eax,ecx\n");
             }
             return sb.toString();
         }
