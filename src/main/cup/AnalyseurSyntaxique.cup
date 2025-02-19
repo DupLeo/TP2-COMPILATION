@@ -58,6 +58,32 @@ action code {:
                 sb.append("\tpop ebx\n");
                 sb.append("\tdiv ebx, eax\n");
                 sb.append("\tmov eax, ebx\n");
+            }else if (op.equals("WHILE")) {
+                String labelStart = "debut_while_1";
+                String labelEnd = "sortie_while_1";
+                sb.append(labelStart).append(":\n");
+                sb.append(left.generateAssembly());
+                sb.append(" jz ").append(labelEnd).append("\n");
+                sb.append(right.generateAssembly());
+                sb.append(" jmp ").append(labelStart).append("\n");
+                sb.append(labelEnd).append(":\n");
+            } else if (op.equals(">")) {
+                String falseLabel = "faux_gt_1";
+                String exitLabel = "sortie_gt_1";
+                sb.append(left.generateAssembly());
+                sb.append("push eax\n");
+                sb.append(right.generateAssembly());
+                sb.append(" pop ebx\n");
+                sb.append(" sub eax, ebx\n");
+                sb.append(" jle ").append(falseLabel).append("\n");
+                sb.append(" mov eax, 1\n");
+                sb.append(" jmp ").append(exitLabel).append("\n");
+                sb.append(falseLabel).append(":\n");
+                sb.append(" mov eax, 0\n");
+                sb.append(exitLabel).append(":\n");
+            } else if (op.equals("OUTPUT")) {
+                sb.append(right.generateAssembly());
+                sb.append(" out eax\n");
             }
             return sb.toString();
         }
@@ -98,7 +124,7 @@ action code {:
         }
 
         public String generateAssembly() {
-            if (value instanceof Node) { 
+            if (value instanceof Node) {
                 return ((Node) value).generateAssembly();
             } else {
                 return "\tmov eax, " + value + "\n";
@@ -158,15 +184,15 @@ program ::= sequence:s POINT
         System.out.println("DATA ENDS\n");
 
         System.out.println("CODE SEGMENT");
-        System.out.println(RESULT.generateAssembly());
-        System.out.print("CODE ENDS");
+        System.out.print(RESULT.generateAssembly());
+        System.out.println("CODE ENDS");
     :};
 
 sequence ::= expression:e1 SEMI sequence:e2 {:
             RESULT = new BinaryNode(";", e1, e2); // Crée un arbre binaire pour la séquence
             :}
             | expression:e {:
-            RESULT = e;
+            RESULT = e; // Si c'est juste une seule expression
             :}
             | {:
             RESULT = new ValueNode("NIL"); // Si c'est une séquence vide
