@@ -62,6 +62,7 @@ comment     = {comment1}|{comment2}
 {not}       { return new Symbol(sym.NOT, yyline, yycolumn) ;}
 "="         { return new Symbol(sym.EGAL, yyline, yycolumn) ;}
 "<"         { return new Symbol(sym.GT, yyline, yycolumn) ;}
+">"         { return new Symbol(sym.GTI, yyline, yycolumn) ;}
 "<="        { return new Symbol(sym.GTE, yyline, yycolumn) ;}
 "("         { return new Symbol(sym.PAR_G, yyline, yycolumn) ;}
 ")"         { return new Symbol(sym.PAR_D, yyline, yycolumn) ;}

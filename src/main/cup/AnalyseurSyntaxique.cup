@@ -74,22 +74,41 @@ action code {:
                 sb.append("\tpush eax\n");
                 sb.append(right.generateAssembly());
                 sb.append("\tpop ebx\n");
-                sb.append("\tsub eax, ebx\n");
+                sb.append("\tsub ebx, eax\n");
                 sb.append("\tjle ").append(falseLabel).append("\n");
                 sb.append("\tmov eax, 1\n");
                 sb.append("\tjmp ").append(exitLabel).append("\n");
                 sb.append(falseLabel).append(":\n");
                 sb.append("\tmov eax, 0\n");
                 sb.append(exitLabel).append(":\n");
-            } else if (op.equals("%")) {
-                sb.append(right.generateAssembly()); 
-                sb.append("\tpush eax\n");  
-                sb.append(left.generateAssembly()); 
+            } else if (op.equals("<")) {
+                String trueLabel = "vrai_jl_1";
+                String exitLabel = "fin_jl_1";
+                sb.append(left.generateAssembly());
+                sb.append("\tpush eax\n");
+                sb.append(right.generateAssembly());
                 sb.append("\tpop ebx\n");
-                sb.append("\tmov ecx,eax\n");
-                sb.append("\tdiv ecx,ebx\n");
-                sb.append("\tmul ecx,ebx\n"); 
-                sb.append("\tsub eax,ecx\n");
+                sb.append("\tsub ebx, eax\n");
+                sb.append("\tjl ").append(trueLabel).append("\n");
+                
+                sb.append("\tmov eax, 0\n");
+                sb.append("\tjmp ").append(exitLabel).append("\n");
+                
+                sb.append(trueLabel).append(":\n");
+                sb.append("\tmov eax, 1\n");
+                
+                sb.append(exitLabel).append(":\n");
+            } else if (op.equals("%")) {
+                sb.append(left.generateAssembly());  
+                sb.append("\tpush eax\n");  
+                sb.append(right.generateAssembly());  
+                sb.append("\tpop ebx\n");
+                
+                sb.append("\tmov ecx, eax\n");  
+                sb.append("\tmov eax, ebx\n");  
+                sb.append("\tdiv ebx, ecx\n");  
+                sb.append("\tmul ebx, ecx\n");  
+                sb.append("\tsub eax, ebx\n");    
             }
             return sb.toString();
         }
@@ -172,7 +191,7 @@ parser code {:
 :};
 
 /* symboles terminaux */
-terminal PLUS, MOINS, MOINS_UNAIRE, MUL, DIV, MOD, NOT, OR, AND, PAR_G, PAR_D, SEMI, POINT, LET, INPUT, OUTPUT, IF, THEN, ELSE, WHILE, DO, EGAL, GT, GTE, NIL, ERROR;
+terminal PLUS, MOINS, MOINS_UNAIRE, MUL, DIV, MOD, NOT, OR, AND, PAR_G, PAR_D, SEMI, POINT, LET, INPUT, OUTPUT, IF, THEN, ELSE, WHILE, DO, EGAL, GT, GTI, GTE, NIL, ERROR;
 terminal Integer ENTIER;
 terminal String IDENT;
 /* non terminaux */
@@ -183,7 +202,7 @@ precedence right OR;
 precedence right AND;
 precedence right NOT;
 precedence nonassoc EGAL;
-precedence nonassoc GT, GTE;
+precedence nonassoc GT,GTI, GTE;
 precedence left PLUS, MOINS;
 precedence left MUL, DIV, MOD;
 precedence left MOINS_UNAIRE;
@@ -237,7 +256,8 @@ expr ::= NOT:op expr:e {: RESULT = new UnaryNode("!", new ValueNode(e)); System.
        | expr:e1 AND expr:e2 {: RESULT = new BinaryNode("AND", new ValueNode(e1), new ValueNode(e2));:}
        | expr:e1 OR expr:e2 {: RESULT = new BinaryNode("OR", new ValueNode(e1), new ValueNode(e2)); :}
        | expr:e1 EGAL expr:e2 {: RESULT = new BinaryNode("==", new ValueNode(e1), new ValueNode(e2)); :}
-       | expr:e1 GT expr:e2 {: RESULT = new BinaryNode(">", new ValueNode(e1), new ValueNode(e2)); :}
+       | expr:e1 GTI expr:e2 {: RESULT = new BinaryNode(">", new ValueNode(e1), new ValueNode(e2)); :}
+       | expr:e1 GT expr:e2 {: RESULT = new BinaryNode("<", new ValueNode(e1), new ValueNode(e2)); :}
        | expr:e1 GTE expr:e2 {: RESULT = new BinaryNode(">=", new ValueNode(e1), new ValueNode(e2)); :}
        | expr:e1 PLUS expr:e2 {: RESULT = new BinaryNode("+", new ValueNode(e1), new ValueNode(e2));:}
        | expr:e1 MOINS expr:e2 {: RESULT = new BinaryNode("-", new ValueNode(e1), new ValueNode(e2)); :}

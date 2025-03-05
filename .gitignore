@@ -33,3 +33,13 @@
 *.iws
 # IntelliJ SonarLint plugin
 .idea/sonarlint/
+.gradle/7.4.1/executionHistory/executionHistory.lock
+.gradle/7.4.1/executionHistory/executionHistory.lock
+.gradle/7.4.1/executionHistory/executionHistory.lock
+.gradle/7.4.1/fileHashes/fileHashes.lock
+.gradle/buildOutputCleanup/buildOutputCleanup.lock
+build/classes/java/main/fr/usmb/m1isc/compilation/tp/parser.class
+build/classes/java/main/fr/usmb/m1isc/compilation/tp/parser$CUP$parser$actions.class
+build/generated/sources/cup/java/main/fr/usmb/m1isc/compilation/tp/parser.java
+build/generated/sources/main/fr/usmb/m1isc/compilation/tp/LexicalAnalyzer.java
+build/tmp/jar/MANIFEST.MF
