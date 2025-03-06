@@ -3,7 +3,7 @@
 Ce projet implémente un compilateur simple qui transforme un langage personnalisé en code assembleur x86. Le programme utilise la librairie `java_cup` pour générer un parseur et la gestion des expressions arithmétiques et logiques.
 
 ## Auteurs
-COULEMEAU Paul & Dupraz-Roget Léo
+COULMEAU Paul & Dupraz-Roget Léo
 
 ## Fonctionnement du programme
 
