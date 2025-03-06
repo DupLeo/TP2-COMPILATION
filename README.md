@@ -23,16 +23,36 @@ Le programme gère des expressions comme :
 - Les opérations arithmétiques standards (`+`, `-`, `*`, `/`, `%`).
 - La sortie avec `OUTPUT`.
 
+# Projet Compilation - Types de Nœuds
+
+Ce projet implémente une structure de nœuds pour représenter une expression de code et générer un code assembleur correspondant. Il y a plusieurs types de nœuds qui servent à modéliser différentes constructions syntaxiques et expressions.
+
+## Types de Nœuds
+
+### 1. **Node (Classe Abstraite)**
+
+La classe `Node` est la classe de base pour toutes les autres classes de nœuds. Chaque type de nœud doit implémenter deux méthodes :
+- `toString()`: Retourne une représentation textuelle du nœud.
+- `generateAssembly()`: Génère le code assembleur correspondant à l'expression ou l'opération décrite par le nœud.
+
+### 2. **BinaryNode**
+
+La classe `BinaryNode` représente une expression binaire. Elle contient :
+- **op** : l'opérateur binaire (par exemple, `+`, `-`, `*`, `LET`, etc.).
+- **left** : le nœud de gauche.
+- **right** : le nœud de droite.
+
+Les opérations implémentées incluent des affectations, des calculs arithmétiques, des comparaisons, et des structures de contrôle comme les boucles `WHILE` ou les conditions `IF`.
+
+#### Exemple :
+```java
+BinaryNode("+", new ValueNode(3), new ValueNode(5));
+```
+
 ### Fonctionnement des actions
 
 1. **Expression arithmétiques et logiques :** Le programme analyse des expressions de type `expr`, en utilisant des nœuds binaires pour gérer les opérations et les nœuds unaires pour les opérations comme `-` ou `OUTPUT`.
 2. **Génération de code assembleur :** Chaque nœud génère une séquence de commandes en langage assembleur pour l'architecture x86. Par exemple, l'affectation d'une valeur à une variable génère un code comme `mov eax, <valeur>`.
-
-### Limites
-
-- La partie récursive du compilateur n'est pas encore implémentée.
-- Le programme ne gère pas la hiérarchisation des opérations de manière complète pour des expressions complexes.
-- Le traitement d'erreurs pour la syntaxe et les opérations est basique.
 
 ## Comment tester le programme
 
