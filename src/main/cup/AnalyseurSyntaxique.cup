@@ -108,7 +108,20 @@ action code {:
                 sb.append("\tmov eax, ebx\n");  
                 sb.append("\tdiv ebx, ecx\n");  
                 sb.append("\tmul ebx, ecx\n");  
-                sb.append("\tsub eax, ebx\n");    
+                sb.append("\tsub eax, ebx\n");   
+
+            } else if (op.equals("IF")) {
+                String elseLabel = "else_" + hashCode();
+                String endLabel = "fin_if_" + hashCode();
+
+                sb.append(left.generateAssembly()); 
+                sb.append("\tjz ").append(elseLabel).append("\n"); 
+                sb.append(right instanceof BinaryNode ? ((BinaryNode) right).left.generateAssembly() : "");
+                sb.append("\tjmp ").append(endLabel).append("\n");
+                sb.append(elseLabel).append(":\n");
+                sb.append(right instanceof BinaryNode ? ((BinaryNode) right).right.generateAssembly() : "");
+                sb.append(endLabel).append(":\n");
+
             }
             return sb.toString();
         }
