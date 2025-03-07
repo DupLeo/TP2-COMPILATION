@@ -8,7 +8,6 @@ import java.util.HashSet;
 /* inclusion du code */
 
 action code {: 
-    // pour utilisation dans les actions (classe action)
     private static HashSet<String> declaredVars = new HashSet<>();
     private boolean erreur = false;
 
@@ -225,7 +224,7 @@ precedence left MOINS_UNAIRE;
 // un pg est une sequence d'insctions terminee par point
 program ::= sequence:s POINT
     {:
-        RESULT = s;  // Associe la séquence de commandes à RESULT
+        RESULT = s;
         System.out.println("DATA SEGMENT");
         for (String var : declaredVars) {
             System.out.println("\t" + var + " DD");
